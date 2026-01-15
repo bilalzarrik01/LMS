@@ -1,0 +1,14 @@
+{
+    "name": "pc/lms",
+    "autoload": {
+        "psr-4": {
+            "Pc\\Lms\\": "src/",
+            "app\\": "app/"
+        }
+    },
+    "authors": [{
+        "name": "bilalzarrik01",
+        "email": "bilalzarrik11@gmail.com"
+    }],
+    "require": {}
+}
