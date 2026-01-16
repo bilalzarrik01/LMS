@@ -1,14 +1,14 @@
 {
-    "name": "pc/lms",
+    "name": "thoth/lms",
+    "description": "Thoth Learning Management System",
+    "type": "project",
     "autoload": {
         "psr-4": {
-            "Pc\\Lms\\": "src/",
-            "app\\": "app/"
+            "App\\": "App/"
         }
     },
     "authors": [{
         "name": "bilalzarrik01",
         "email": "bilalzarrik11@gmail.com"
-    }],
-    "require": {}
+    }]
 }

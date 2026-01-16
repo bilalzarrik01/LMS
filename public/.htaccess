@@ -1,0 +1,15 @@
+# RewriteEngine On
+
+# # Redirect all requests to index.php except for existing files and directories
+# RewriteCond %{REQUEST_FILENAME} !-f
+# RewriteCond %{REQUEST_FILENAME} !-d
+# RewriteRule ^(.*)$ index.php [QSA,L]
+
+# # Security: Disable directory browsing
+# Options -Indexes
+
+# # Security: Prevent access to sensitive files
+# <FilesMatch "^\.">
+#     Order allow,deny
+#     Deny from all
+# </FilesMatch>

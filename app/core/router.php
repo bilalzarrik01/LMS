@@ -1,65 +1,52 @@
 <?php
+namespace App\Core;
+class Router
+{
+    private $routes = [];
 
-namespace app\core;
-
-class Router {
-    private static array $routes = [];
-    private static $router;
-
-    private function __construct() {}
-
-    public static function getRouter(): Router {
-        if (!isset(self::$router)) {
-            self::$router = new Router();
-        }
-        return self::$router;
+    public function get($path, $callback)
+    {
+        $this->routes['GET'][$path] = $callback;
     }
 
-    private function register(string $route, string $method, array|callable $action) {
-        $route = trim($route, '/');
-        self::$routes[$method][$route] = $action;
+    public function post($path, $callback)
+    {
+        $this->routes['POST'][$path] = $callback;
     }
 
-    public function get(string $route, array|callable $action) {
-        $this->register($route, 'GET', $action);
-    }
+    public function dispatch($uri)
+    {
+        $method = $_SERVER['REQUEST_METHOD'];
+        $uri = parse_url($uri, PHP_URL_PATH);
 
-    public function post(string $route, array|callable $action) {
-        $this->register($route, 'POST', $action);
-    }
-
-    public function put(string $route, array|callable $action) {
-        $this->register($route, 'PUT', $action);
-    }
-
-    public function delete(string $route, array|callable $action) {
-        $this->register($route, 'DELETE', $action);
-    }
-
-    public function dispatch($uri, $method = null) {
-        if (!$method) {
-            $method = $_SERVER['REQUEST_METHOD'];
+        // Remove base path
+        $basePath = '/lms/public';
+        if (strpos($uri, $basePath) === 0) {
+            $uri = substr($uri, strlen($basePath));
         }
 
-        $uri = trim(parse_url($uri, PHP_URL_PATH), '/');
-
-        if (isset(self::$routes[$method][$uri])) {
-            $action = self::$routes[$method][$uri];
-            $this->callAction($action);
-        } else {
-            http_response_code(404);
-            echo "404 - Page Not Found";
+        if ($uri === '' || $uri === false) {
+            $uri = '/';
         }
-    }
 
-    private function callAction(array|callable $action) {
-        if (is_array($action)) {
-            // [ControllerClass, 'method']
-            [$controllerClass, $method] = $action;
-            $controller = new $controllerClass();
-            $controller->$method();
-        } elseif (is_callable($action)) {
-            call_user_func($action);
+        foreach ($this->routes[$method] ?? [] as $route => $callback) {
+            // Routes with parameters {id}
+            $pattern = preg_replace('/\{[a-zA-Z_]+\}/', '([^/]+)', $route);
+            $pattern = "@^" . $pattern . "$@D";
+
+            if (preg_match($pattern, $uri, $matches)) {
+                array_shift($matches);
+
+                if (is_array($callback)) {
+                    $controller = new $callback[0]();
+                    $methodName = $callback[1];
+                    return call_user_func_array([$controller, $methodName], $matches);
+                }
+
+                return call_user_func_array($callback, $matches);
+            }
         }
-    }
-}
+
+        http_response_code(404);
+        echo "404 Not Found";
+    }}

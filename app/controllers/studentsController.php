@@ -1,0 +1,237 @@
+<?php
+
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Models\Student;
+use App\Models\Course;
+use App\Models\Enrollment;
+
+class StudentsController extends Controller
+{
+    public function home()
+    {
+        if (isset($_SESSION['student_id'])) {
+            $this->redirect('/student/dashboard');
+        }
+        
+        $data = [
+            'title' => 'Thoth LMS - Home'
+        ];
+        
+        $this->view('student/home', $data);
+    }
+
+    public function login()
+    {
+        if (isset($_SESSION['student_id'])) {
+            $this->redirect('/student/dashboard');
+        }
+        
+        $data = [
+            'title' => 'Login',
+            'csrf_token' => $this->generateCsrfToken(),
+            'success' => isset($_GET['registered']) ? 'Registration successful! Please login.' : null
+        ];
+        
+        $this->view('student/login', $data);
+    }
+
+    public function register()
+    {
+        if (isset($_SESSION['student_id'])) {
+            $this->redirect('/student/dashboard');
+            return;
+        }
+        
+        $data = [
+            'title' => 'Register',
+            'csrf_token' => $this->generateCsrfToken()
+        ];
+        
+        $this->view('student/register', $data);
+    }
+
+    public function handleRegister()
+    {
+        $this->validateCsrfToken();
+        
+        $name = $this->sanitize($_POST['name'] ?? '');
+        $email = $this->sanitize($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
+        $confirmPassword = $_POST['confirm_password'] ?? '';
+
+        $errors = [];
+        
+        if (empty($name) || strlen($name) < 2) {
+            $errors[] = "Name must be at least 2 characters";
+        }
+        
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = "Valid email is required";
+        }
+        
+        if (empty($password) || strlen($password) < 8) {
+            $errors[] = "Password must be at least 8 characters";
+        }
+        
+        if ($password !== $confirmPassword) {
+            $errors[] = "Passwords do not match";
+        }
+        
+        if (Student::exists($email)) {
+            $errors[] = "Email already registered";
+        }
+
+        if (!empty($errors)) {
+            $data = [
+                'errors' => $errors,
+                'old' => compact('name', 'email'),
+                'csrf_token' => $this->generateCsrfToken(),
+                'title' => 'Register'
+            ];
+            $this->view('student/register', $data);
+            return;
+        }
+
+        $success = Student::create($name, $email, $password);
+        
+        if ($success) {
+            $this->redirect('/login?registered=1');
+        } else {
+            $data = [
+                'errors' => ['Registration failed. Please try again.'],
+                'old' => compact('name', 'email'),
+                'csrf_token' => $this->generateCsrfToken(),
+                'title' => 'Register'
+            ];
+            $this->view('student/register', $data);
+        }
+    }
+
+ public function handleLogin()
+{
+    $this->validateCsrfToken();
+    
+    $email = $this->sanitize($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    if (empty($email) || empty($password)) {
+        $data = [
+            'error' => 'Email and password are required',
+            'csrf_token' => $this->generateCsrfToken(),
+            'title' => 'Login'
+        ];
+        $this->view('student/login', $data);
+        return;
+    }
+
+    $student = Student::authenticate($email, $password);
+
+    if (!$student) {
+        $data = [
+            'error' => 'Invalid email or password',
+            'csrf_token' => $this->generateCsrfToken(),
+            'title' => 'Login'
+        ];
+        $this->view('student/login', $data);
+        return;
+    }
+
+    session_regenerate_id(true);
+    
+    $_SESSION['student_id'] = $student['id'];
+    $_SESSION['student_name'] = $student['name'];
+    $_SESSION['student_email'] = $student['email'];
+    
+    $this->redirect('/student/dashboard');
+}
+    public function dashboard()
+    {
+        $this->requireAuth();
+        
+        $studentId = $_SESSION['student_id'];
+        $availableCourses = Course::getAll();
+        $enrolledCourses = Enrollment::getStudentCourses($studentId);
+        
+        $enrolledIds = array_column($enrolledCourses, 'id');
+        
+        $data = [
+            'title' => 'Dashboard',
+            'studentName' => $_SESSION['student_name'],
+            'availableCourses' => $availableCourses,
+            'enrolledCourses' => $enrolledCourses,
+            'enrolledIds' => $enrolledIds
+        ];
+        
+        $this->view('student/dashboard', $data);
+    }
+
+    public function course($id)
+    {
+        $this->requireAuth();
+        
+        if (!is_numeric($id)) {
+            $this->redirect('/student/dashboard');
+            return;
+        }
+        
+        $course = Course::find((int)$id);
+        if (!$course) {
+            http_response_code(404);
+            $this->view('errors/404', ['title' => '404 Not Found']);
+            return;
+        }
+        
+        $studentId = $_SESSION['student_id'];
+        $isEnrolled = Enrollment::isEnrolled($studentId, (int)$id);
+        
+        $data = [
+            'title' => $course['title'],
+            'course' => $course,
+            'isEnrolled' => $isEnrolled,
+            'csrf_token' => $this->generateCsrfToken()
+        ];
+        
+        $this->view('student/course', $data);
+    }
+
+    public function enroll($courseId)
+    {
+        $this->requireAuth();
+        
+        if (!is_numeric($courseId)) {
+            $this->redirect('/student/dashboard');
+            return;
+        }
+        
+        $studentId = $_SESSION['student_id'];
+        $courseId = (int)$courseId;
+        
+        $course = Course::find($courseId);
+        if (!$course) {
+            $this->redirect('/student/dashboard');
+            return;
+        }
+        
+        if (!Enrollment::isEnrolled($studentId, $courseId)) {
+            Enrollment::create($studentId, $courseId);
+        }
+        
+        $this->redirect('/student/dashboard');
+    }
+
+    public function logout()
+    {
+        $this->requireAuth();
+        
+        $_SESSION = [];
+        
+        if (isset($_COOKIE[session_name()])) {
+            setcookie(session_name(), '', time() - 3600, '/');
+        }
+        
+        session_destroy();
+        $this->redirect('/login');
+    }
+}

@@ -1,21 +1,27 @@
 <?php
-session_start();
 
+require_once __DIR__ . '/../vendor/autoload.php';
 
-require_once '../app/core/Router.php';
-require_once '../app/controllers/StudentController.php';
+use App\Core\Router;
 
-use app\core\Router;
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-$router = Router::getRouter();
+$router = new Router();
 
-// Pages publiques
-$router->get('/login', [StudentController::class, 'login']);
-$router->post('/login', [StudentController::class, 'handleLogin']);
-$router->get('/register', [StudentController::class, 'register']);
-$router->post('/register', [StudentController::class, 'handleRegister']);
+// Public routes
+$router->get('/', ['App\Controllers\StudentsController', 'login']);
+$router->get('/login', ['App\Controllers\StudentsController', 'login']);
+$router->post('/login', ['App\Controllers\StudentsController', 'handleLogin']);
+$router->get('/register', ['App\Controllers\StudentsController', 'register']);
+$router->post('/register', ['App\Controllers\StudentsController', 'handleRegister']);
 
+// Protected routes
+$router->get('/student/dashboard', ['App\Controllers\StudentsController', 'dashboard']);
+$router->get('/student/course/{id}', ['App\Controllers\StudentsController', 'course']);
+$router->get('/student/enroll/{id}', ['App\Controllers\StudentsController', 'enroll']);
+$router->get('/logout', ['App\Controllers\StudentsController', 'logout']);
 
-$router->get('/student/dashboard', [StudentController::class, 'dashboard']);
-
-$router->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
+// Dispatch
+$router->dispatch($_SERVER['REQUEST_URI']);
