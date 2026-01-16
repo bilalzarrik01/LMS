@@ -97,6 +97,8 @@ class StudentsController extends Controller
         $success = Student::create($name, $email, $password);
         
         if ($success) {
+            // Regenerate session ID to prevent session fixation
+            session_regenerate_id(true);
             $this->redirect('/login?registered=1');
         } else {
             $data = [
@@ -109,43 +111,44 @@ class StudentsController extends Controller
         }
     }
 
- public function handleLogin()
-{
-    $this->validateCsrfToken();
-    
-    $email = $this->sanitize($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
+    public function handleLogin()
+    {
+        $this->validateCsrfToken();
+        
+        $email = $this->sanitize($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
 
-    if (empty($email) || empty($password)) {
-        $data = [
-            'error' => 'Email and password are required',
-            'csrf_token' => $this->generateCsrfToken(),
-            'title' => 'Login'
-        ];
-        $this->view('student/login', $data);
-        return;
+        if (empty($email) || empty($password)) {
+            $data = [
+                'error' => 'Email and password are required',
+                'csrf_token' => $this->generateCsrfToken(),
+                'title' => 'Login'
+            ];
+            $this->view('student/login', $data);
+            return;
+        }
+
+        $student = Student::authenticate($email, $password);
+
+        if (!$student) {
+            $data = [
+                'error' => 'Invalid email or password',
+                'csrf_token' => $this->generateCsrfToken(),
+                'title' => 'Login'
+            ];
+            $this->view('student/login', $data);
+            return;
+        }
+
+        session_regenerate_id(true);
+        
+        $_SESSION['student_id'] = $student['id'];
+        $_SESSION['student_name'] = $student['name'];
+        $_SESSION['student_email'] = $student['email'];
+        
+        $this->redirect('/student/dashboard');
     }
 
-    $student = Student::authenticate($email, $password);
-
-    if (!$student) {
-        $data = [
-            'error' => 'Invalid email or password',
-            'csrf_token' => $this->generateCsrfToken(),
-            'title' => 'Login'
-        ];
-        $this->view('student/login', $data);
-        return;
-    }
-
-    session_regenerate_id(true);
-    
-    $_SESSION['student_id'] = $student['id'];
-    $_SESSION['student_name'] = $student['name'];
-    $_SESSION['student_email'] = $student['email'];
-    
-    $this->redirect('/student/dashboard');
-}
     public function dashboard()
     {
         $this->requireAuth();
@@ -156,12 +159,24 @@ class StudentsController extends Controller
         
         $enrolledIds = array_column($enrolledCourses, 'id');
         
+        // Get flash messages
+        $success = $_SESSION['success'] ?? null;
+        $error = $_SESSION['error'] ?? null;
+        $info = $_SESSION['info'] ?? null;
+        
+        // Clear flash messages
+        unset($_SESSION['success'], $_SESSION['error'], $_SESSION['info']);
+        
         $data = [
             'title' => 'Dashboard',
             'studentName' => $_SESSION['student_name'],
             'availableCourses' => $availableCourses,
             'enrolledCourses' => $enrolledCourses,
-            'enrolledIds' => $enrolledIds
+            'enrolledIds' => $enrolledIds,
+            'csrf_token' => $this->generateCsrfToken(),
+            'success' => $success,
+            'error' => $error,
+            'info' => $info
         ];
         
         $this->view('student/dashboard', $data);
@@ -196,11 +211,15 @@ class StudentsController extends Controller
         $this->view('student/course', $data);
     }
 
-    public function enroll($courseId)
+    public function enroll()
     {
         $this->requireAuth();
+        $this->validateCsrfToken();
+        
+        $courseId = $_POST['course_id'] ?? null;
         
         if (!is_numeric($courseId)) {
+            $_SESSION['error'] = 'Invalid course ID';
             $this->redirect('/student/dashboard');
             return;
         }
@@ -210,12 +229,20 @@ class StudentsController extends Controller
         
         $course = Course::find($courseId);
         if (!$course) {
+            $_SESSION['error'] = 'Course not found';
             $this->redirect('/student/dashboard');
             return;
         }
         
-        if (!Enrollment::isEnrolled($studentId, $courseId)) {
-            Enrollment::create($studentId, $courseId);
+        if (Enrollment::isEnrolled($studentId, $courseId)) {
+            $_SESSION['info'] = 'You are already enrolled in this course';
+        } else {
+            $success = Enrollment::create($studentId, $courseId);
+            if ($success) {
+                $_SESSION['success'] = 'Successfully enrolled in ' . htmlspecialchars($course['title'], ENT_QUOTES, 'UTF-8');
+            } else {
+                $_SESSION['error'] = 'Enrollment failed. Please try again.';
+            }
         }
         
         $this->redirect('/student/dashboard');
@@ -225,13 +252,24 @@ class StudentsController extends Controller
     {
         $this->requireAuth();
         
-        $_SESSION = [];
-        
-        if (isset($_COOKIE[session_name()])) {
-            setcookie(session_name(), '', time() - 3600, '/');
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->validateCsrfToken();
+            
+            $_SESSION = [];
+            
+            if (isset($_COOKIE[session_name()])) {
+                setcookie(session_name(), '', time() - 3600, '/');
+            }
+            
+            session_destroy();
+            $this->redirect('/login');
+        } else {
+            // Show logout confirmation page
+            $data = [
+                'title' => 'Logout',
+                'csrf_token' => $this->generateCsrfToken()
+            ];
+            $this->view('student/logout_confirm', $data);
         }
-        
-        session_destroy();
-        $this->redirect('/login');
     }
 }

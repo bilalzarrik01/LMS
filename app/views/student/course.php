@@ -5,200 +5,173 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($title ?? 'Course') ?> - Thoth LMS</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            min-height: 100vh;
-            padding: 20px;
+            background: #f5f7fa;
+        }
+        
+        .navbar {
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar h1 {
+            color: #667eea;
+            font-size: 24px;
+        }
+        
+        .navbar a {
+            color: #667eea;
+            text-decoration: none;
+            padding: 8px 20px;
+            border: 1px solid #667eea;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .navbar a:hover {
+            background: #667eea;
+            color: white;
         }
         
         .container {
             max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .back-link {
-            display: inline-block;
-            color: #DAA520;
-            text-decoration: none;
-            margin-bottom: 20px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        .back-link:hover {
-            color: #FFD700;
+            margin: 30px auto;
+            padding: 0 20px;
         }
         
         .course-header {
-            background: rgba(0, 0, 0, 0.8);
+            background: white;
             padding: 40px;
-            border-radius: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 30px;
-            border: 1px solid rgba(218, 165, 32, 0.2);
         }
         
         .course-header h1 {
-            background: linear-gradient(135deg, #DAA520 0%, #FFD700 50%, #DAA520 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 32px;
+        }
+        
+        .course-header .instructor {
+            color: #666;
+            font-size: 18px;
             margin-bottom: 20px;
         }
         
-        .course-meta {
-            color: #888;
-            margin-bottom: 20px;
-        }
-        
-        .course-description {
-            color: #c0c0c0;
+        .course-header p {
+            color: #555;
             line-height: 1.8;
-            font-size: 1.1rem;
-        }
-        
-        .enrollment-status {
-            background: rgba(0, 0, 0, 0.8);
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            border: 1px solid rgba(218, 165, 32, 0.2);
+            margin-bottom: 25px;
         }
         
         .enrolled-badge {
-            background: #51cf66;
+            display: inline-block;
+            background: #48bb78;
             color: white;
-            padding: 15px 30px;
-            border-radius: 30px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-        
-        .enroll-btn {
-            padding: 15px 40px;
-            background: linear-gradient(135deg, #DAA520 0%, #FFD700 100%);
-            color: #000;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 1.1rem;
-            display: inline-block;
-            transition: all 0.3s;
-        }
-        
-        .enroll-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(218, 165, 32, 0.6);
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <a href="/lms/public/student/dashboard" class="back-link">← Back to Dashboard</a>
-        
-        <div class="course-header">
-            <h1><?= htmlspecialchars($course['title']) ?></h1>
-            <div class="course-meta">
-                Created: <?= date('F d, Y', strtotime($course['created_at'])) ?>
-            </div>
-            <div class="course-description">
-                <?= nl2br(htmlspecialchars($course['description'])) ?>
-            </div>
-        </div>
-        
-        <div class="enrollment-status">
-            <?php if ($isEnrolled): ?>
-                <span class="enrolled-badge">✓ You are enrolled in this course</span>
-            <?php else: ?>
-                <p style="color: #c0c0c0; margin-bottom: 20px; font-size: 1.1rem;">
-                    Enroll now to start learning!
-                </p>
-                <a href="/lms/public/student/enroll/<?= $course['id'] ?>" class="enroll-btn">
-                    Enroll in This Course
-                </a>
-            <?php endif; ?>
-        </div>
-    </div>
-</body>
-</html>
-```
-
----
-
-## File: /App/views/errors/404.php
-```php
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 Not Found - Thoth LMS</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .container {
-            text-align: center;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 60px 40px;
-            border-radius: 20px;
-            border: 1px solid rgba(218, 165, 32, 0.2);
-        }
-        
-        .error-code {
-            font-size: 8rem;
-            background: linear-gradient(135deg, #DAA520 0%, #FFD700 50%, #DAA520 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-        }
-        
-        h1 {
-            color: #c0c0c0;
-            margin: 20px 0;
-            font-size: 2rem;
-        }
-        
-        p {
-            color: #888;
-            margin-bottom: 30px;
-            font-size: 1.1rem;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-bottom: 15px;
         }
         
         .btn {
-            padding: 15px 40px;
-            background: linear-gradient(135deg, #DAA520 0%, #FFD700 100%);
-            color: #000;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
             text-decoration: none;
-            border-radius: 50px;
-            font-weight: 700;
             display: inline-block;
             transition: all 0.3s;
         }
         
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(218, 165, 32, 0.6);
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+        
+        .course-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .course-content h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .course-content p {
+            color: #666;
+            line-height: 1.8;
         }
     </style>
 </head>
 <body>
+    <nav class="navbar">
+        <h1>Thoth LMS</h1>
+        <a href="/lms/public/student/dashboard">← Back to Dashboard</a>
+    </nav>
+    
     <div class="container">
-        <div class="error-code">404</div>
-        <h1>Page Not Found</h1>
-        <p>The page you are looking for does not exist.</p>
-        <a href="/lms/public/" class="btn">Go Home</a>
+        <div class="course-header">
+            <?php if ($isEnrolled): ?>
+                <span class="enrolled-badge">✓ You are enrolled</span>
+            <?php endif; ?>
+            
+            <h1><?= htmlspecialchars($course['title']) ?></h1>
+            <p class="instructor">Instructor: <?= htmlspecialchars($course['instructor']) ?></p>
+            <p><?= htmlspecialchars($course['description']) ?></p>
+            
+            <?php if (!$isEnrolled): ?>
+                <form method="POST" action="/lms/public/student/enroll" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+                    <input type="hidden" name="course_id" value="<?= $course['id'] ?>">
+                    <button type="submit" class="btn btn-success">Enroll in this Course</button>
+                </form>
+            <?php endif; ?>
+        </div>
+        
+        <?php if ($isEnrolled): ?>
+            <div class="course-content">
+                <h2>Course Content</h2>
+                <p>Welcome to the course! Course materials and lessons will appear here.</p>
+            </div>
+        <?php else: ?>
+            <div class="course-content">
+                <h2>About This Course</h2>
+                <p>Enroll in this course to access all the learning materials, assignments, and resources.</p>
+            </div>
+        <?php endif; ?>
     </div>
 </body>
 </html>

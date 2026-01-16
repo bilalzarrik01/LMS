@@ -15,21 +15,21 @@ abstract class Controller
         
         require $viewPath;
     }
-
+    
     protected function redirect(string $path)
     {
         $fullPath = '/lms/public' . $path;
         header("Location: $fullPath");
         exit;
     }
-
+    
     protected function requireAuth()
     {
         if (!isset($_SESSION['student_id'])) {
             $this->redirect('/login');
         }
     }
-
+    
     protected function validateCsrfToken()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -42,15 +42,16 @@ abstract class Controller
             }
         }
     }
-
+    
     protected function generateCsrfToken(): string
     {
+        // Only generate a new token if one doesn't exist
         if (empty($_SESSION['csrf_token'])) {
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         }
         return $_SESSION['csrf_token'];
     }
-
+    
     protected function sanitize($data)
     {
         if (is_array($data)) {
@@ -58,7 +59,7 @@ abstract class Controller
         }
         return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
     }
-
+    
     protected function json($data, int $statusCode = 200)
     {
         http_response_code($statusCode);
@@ -66,5 +67,4 @@ abstract class Controller
         echo json_encode($data);
         exit;
     }
-    
 }

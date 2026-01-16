@@ -5,192 +5,221 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($title ?? 'Dashboard') ?> - Thoth LMS</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            min-height: 100vh;
-            padding: 20px;
+            background: #f5f7fa;
         }
         
-        .header {
-            background: rgba(0, 0, 0, 0.8);
-            padding: 20px 40px;
-            border-radius: 15px;
-            margin-bottom: 30px;
+        .navbar {
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid rgba(218, 165, 32, 0.2);
         }
         
-        .header h1 {
-            background: linear-gradient(135deg, #DAA520 0%, #FFD700 50%, #DAA520 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 1.8rem;
+        .navbar h1 {
+            color: #667eea;
+            font-size: 24px;
         }
         
-        .welcome {
-            color: #c0c0c0;
-            font-size: 1.1rem;
+        .navbar .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
         
-        .logout-btn {
-            padding: 10px 25px;
-            background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
-            color: white;
+        .navbar .user-name {
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .navbar a {
+            color: #667eea;
             text-decoration: none;
-            border-radius: 25px;
-            font-weight: 600;
+            padding: 8px 20px;
+            border: 1px solid #667eea;
+            border-radius: 5px;
             transition: all 0.3s;
         }
         
-        .logout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.4);
+        .navbar a:hover {
+            background: #667eea;
+            color: white;
         }
         
         .container {
             max-width: 1200px;
-            margin: 0 auto;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
         }
         
         .section {
-            background: rgba(0, 0, 0, 0.8);
+            background: white;
             padding: 30px;
-            border-radius: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 30px;
-            border: 1px solid rgba(218, 165, 32, 0.2);
         }
         
         .section h2 {
-            color: #DAA520;
+            color: #333;
             margin-bottom: 20px;
-            font-size: 1.5rem;
+            font-size: 22px;
         }
         
-        .course-grid {
+        .courses-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
         
         .course-card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 25px;
-            border-radius: 12px;
-            border: 1px solid rgba(218, 165, 32, 0.3);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
             transition: all 0.3s;
         }
         
         .course-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             transform: translateY(-5px);
-            background: rgba(218, 165, 32, 0.1);
-            border-color: rgba(218, 165, 32, 0.5);
         }
         
         .course-card h3 {
-            color: #FFD700;
+            color: #667eea;
             margin-bottom: 10px;
-            font-size: 1.3rem;
+            font-size: 18px;
         }
         
         .course-card p {
-            color: #999;
+            color: #666;
             margin-bottom: 15px;
-            line-height: 1.6;
+            line-height: 1.5;
+        }
+        
+        .course-card .instructor {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 15px;
         }
         
         .btn {
-            display: inline-block;
             padding: 10px 20px;
-            border-radius: 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
             text-decoration: none;
-            font-weight: 600;
+            display: inline-block;
             transition: all 0.3s;
         }
         
-        .btn-enroll {
-            background: linear-gradient(135deg, #DAA520 0%, #FFD700 100%);
-            color: #000;
+        .btn-primary {
+            background: #667eea;
+            color: white;
         }
         
-        .btn-enroll:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(218, 165, 32, 0.4);
+        .btn-primary:hover {
+            background: #5568d3;
         }
         
-        .btn-view {
-            background: transparent;
-            border: 2px solid #DAA520;
-            color: #DAA520;
+        .btn-success {
+            background: #48bb78;
+            color: white;
         }
         
-        .btn-view:hover {
-            background: rgba(218, 165, 32, 0.1);
-            border-color: #FFD700;
-            color: #FFD700;
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #333;
         }
         
         .enrolled-badge {
-            background: #51cf66;
+            display: inline-block;
+            background: #48bb78;
             color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-        
-        .empty-state {
-            text-align: center;
-            color: #666;
-            padding: 40px;
-            font-size: 1.1rem;
-        }
-        
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-            
-            .course-grid {
-                grid-template-columns: 1fr;
-            }
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div>
-                <h1>🎓 THOTH LMS</h1>
-                <p class="welcome">Welcome, <?= htmlspecialchars($studentName) ?>!</p>
-            </div>
-            <a href="/lms/public/logout" class="logout-btn">Logout</a>
+    <nav class="navbar">
+        <h1>Thoth LMS</h1>
+        <div class="user-info">
+            <span class="user-name">Welcome, <?= htmlspecialchars($studentName) ?></span>
+            <a href="/lms/public/logout">Logout</a>
         </div>
+    </nav>
+    
+    <div class="container">
+        <?php if (isset($success)): ?>
+            <div class="alert alert-success">
+                ✓ <?= htmlspecialchars($success) ?>
+            </div>
+        <?php endif; ?>
+        
+        <?php if (isset($error)): ?>
+            <div class="alert alert-error">
+                ✗ <?= htmlspecialchars($error) ?>
+            </div>
+        <?php endif; ?>
+        
+        <?php if (isset($info)): ?>
+            <div class="alert alert-info">
+                ℹ <?= htmlspecialchars($info) ?>
+            </div>
+        <?php endif; ?>
         
         <div class="section">
-            <h2>📚 My Enrolled Courses</h2>
+            <h2>My Enrolled Courses</h2>
             <?php if (empty($enrolledCourses)): ?>
-                <div class="empty-state">
-                    You haven't enrolled in any courses yet. Browse available courses below!
-                </div>
+                <p style="color: #666;">You haven't enrolled in any courses yet.</p>
             <?php else: ?>
-                <div class="course-grid">
+                <div class="courses-grid">
                     <?php foreach ($enrolledCourses as $course): ?>
                         <div class="course-card">
+                            <span class="enrolled-badge">Enrolled</span>
                             <h3><?= htmlspecialchars($course['title']) ?></h3>
                             <p><?= htmlspecialchars($course['description']) ?></p>
-                            <p style="color: #888; font-size: 0.9rem;">
-                                Enrolled: <?= date('M d, Y', strtotime($course['enrollment_date'])) ?>
-                            </p>
-                            <a href="/lms/public/student/course/<?= $course['id'] ?>" class="btn btn-view">
-                                View Course
-                            </a>
+                            <p class="instructor">By <?= htmlspecialchars($course['instructor']) ?></p>
+                            <a href="/lms/public/student/course/<?= $course['id'] ?>" class="btn btn-primary">View Course</a>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -198,28 +227,26 @@
         </div>
         
         <div class="section">
-            <h2>🔍 Available Courses</h2>
-            <?php if (empty($availableCourses)): ?>
-                <div class="empty-state">
-                    No courses available at the moment.
-                </div>
-            <?php else: ?>
-                <div class="course-grid">
-                    <?php foreach ($availableCourses as $course): ?>
-                        <div class="course-card">
-                            <h3><?= htmlspecialchars($course['title']) ?></h3>
-                            <p><?= htmlspecialchars($course['description']) ?></p>
-                            <?php if (in_array($course['id'], $enrolledIds)): ?>
-                                <span class="enrolled-badge">✓ Enrolled</span>
-                            <?php else: ?>
-                                <a href="/lms/public/student/enroll/<?= $course['id'] ?>" class="btn btn-enroll">
-                                    Enroll Now
-                                </a>
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
+            <h2>Available Courses</h2>
+            <div class="courses-grid">
+                <?php foreach ($availableCourses as $course): ?>
+                    <div class="course-card">
+                        <h3><?= htmlspecialchars($course['title']) ?></h3>
+                        <p><?= htmlspecialchars($course['description']) ?></p>
+                        <p class="instructor">By <?= htmlspecialchars($course['instructor']) ?></p>
+                        
+                        <?php if (in_array($course['id'], $enrolledIds)): ?>
+                            <a href="/lms/public/student/course/<?= $course['id'] ?>" class="btn btn-secondary">View Course</a>
+                        <?php else: ?>
+                            <form method="POST" action="/lms/public/student/enroll" style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+                                <input type="hidden" name="course_id" value="<?= $course['id'] ?>">
+                                <button type="submit" class="btn btn-success">Enroll Now</button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
 </body>

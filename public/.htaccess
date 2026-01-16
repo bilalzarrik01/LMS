@@ -1,15 +1,7 @@
-# RewriteEngine On
+RewriteEngine On
+RewriteBase /lms/public/
 
-# # Redirect all requests to index.php except for existing files and directories
-# RewriteCond %{REQUEST_FILENAME} !-f
-# RewriteCond %{REQUEST_FILENAME} !-d
-# RewriteRule ^(.*)$ index.php [QSA,L]
-
-# # Security: Disable directory browsing
-# Options -Indexes
-
-# # Security: Prevent access to sensitive files
-# <FilesMatch "^\.">
-#     Order allow,deny
-#     Deny from all
-# </FilesMatch>
+# Redirect all requests to index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
